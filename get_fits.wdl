@@ -11,7 +11,7 @@ workflow get_fits {
   }
   call generate_uri { input: library_id = library_id, run_id = run_id, generate_uri_rb = generate_uri_rb }
   call fit_sigs { input: vcf = generate_uri.uri, clinical_rscript = clinical_rscript, library_id = library_id }
-  call filter_sigs {input: sigs_filter_py = sigs_filter_py, aetiologies_csv = aetiologies_csv, signatures_csv = fit_sigs.signatures_csv }
+  call filter_sigs {input: sigs_filter_py = sigs_filter_py, aetiologies_csv = aetiologies_csv, signatures_csv = fit_sigs.signatures_csv, library_id = library_id }
 #  call cleanup_vcf_copy { input: library_id = library_id, run_id = run_id, filtered_csv = filter_sigs.filtered_csv }
 
   output {
@@ -48,7 +48,7 @@ task fit_sigs {
     Rscript ${clinical_rscript} ${vcf} ${library_id}
   }
   output {
-    File signatures_csv = "sbs_signatures.csv"
+    File signatures_csv = "${library_id}_sbs_signatures.csv"
   }
   runtime {
     docker: "tuckerbower/mutationalpatterns:latest"
@@ -60,12 +60,13 @@ task filter_sigs {
     File aetiologies_csv
     File signatures_csv
     File sigs_filter_py
+    String library_id
   }
   command {
-    python3.8 ${sigs_filter_py} -f ${signatures_csv} -a ${aetiologies_csv}
+    python3.8 ${sigs_filter_py} -f ${signatures_csv} -a ${aetiologies_csv} -l ${library_id}
   }
   output {
-    File filtered_csv = "sbs_signatures_filtered.csv"
+    File filtered_csv = "${library_id}_sbs_signatures_filtered.csv"
   }
   runtime {
     docker: "tuckerbower/mutationalpatterns:latest"
