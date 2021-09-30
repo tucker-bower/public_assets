@@ -52,7 +52,7 @@ task fit_sigs {
   }
   runtime {
     docker: "tuckerbower/mutationalpatterns:latest"
-    memory: "6 GB"
+    memory: "8 GB"
   }
 }
 task filter_sigs {
